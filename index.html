@@ -10,13 +10,19 @@
 <body oncontextmenu="return false;">
   <div class="space">
     <img src="cnd/recording.gif" alt="GIF">
-    <audio src="cnd/no-fear.mp3" autoplay></audio>
+    <audio id="myAudio" src="cnd/no-fear.mp3"></audio>
   </div>
 
   <script>
     document.addEventListener('contextmenu', function(e) {
       e.preventDefault();
     });
+    const audio = document.getElementById('myAudio');
+    function playAudio() {
+      audio.play();
+    }
+    document.addEventListener('click', playAudio);
+    document.addEventListener('touchstart', playAudio);
   </script>
 </body>
 </html>
