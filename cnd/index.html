@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Graduation Ribbon Designer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      position: relative;
+      background: #f0f0f0;
+    }
+    #canvas {
+      display: block;
+      background: white;
+      margin: auto;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .btn {
+      position: absolute;
+      background: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .material-icons { font-size: 24px; }
+    /* Top buttons */
+    #clearBtn { top: 10px; left: 10px; background: #e57373; color: white; }
+    #publishBtn { top: 10px; right: 10px; }
+    /* Rotate on head */
+    #rotateBtn { position: absolute; width: 48px; height: 48px; background: #fff; border-radius: 24px;
+      top: calc(50% - 200px); /* adjust to head */
+      left: calc(50% - 24px); /* center */
+    }
+    /* Side panels */
+    .side-panel {
+      position: absolute; top: 100px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    #leftPanel { left: 10px; }
+    #rightPanel { right: 10px; }
+    .side-panel .btn { width: 48px; height: 48px; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="600" height="800"></canvas>
+
+  <!-- Top Controls -->
+  <button id="clearBtn" class="btn">
+    <span class="material-icons">clear</span>
+  </button>
+  <button id="publishBtn" class="btn" disabled>
+    <span class="material-icons">publish</span>
+  </button>
+  <button id="rotateBtn" class="btn">
+    <span class="material-icons">rotate_right</span>
+  </button>
+
+  <!-- Left Panel: Colors & Font -->
+  <div id="leftPanel" class="side-panel">
+    <button id="bgColorBtn" class="btn" title="Ribbon Color">
+      <span class="material-icons">format_color_fill</span>
+    </button>
+    <button id="textColorBtn" class="btn" title="Text Color">
+      <span class="material-icons">format_color_text</span>
+    </button>
+    <button id="fontBtn" class="btn" title="Font">
+      <span class="material-icons">font_download</span>
+    </button>
+  </div>
+
+  <!-- Right Panel: Symbols, Size, Pattern -->
+  <div id="rightPanel" class="side-panel">
+    <button id="symbolBtn" class="btn" title="Symbols">
+      <span class="material-icons">emoji_symbols</span>
+    </button>
+    <button id="sizeBtn" class="btn" title="Text Size">
+      <span class="material-icons">text_fields</span>
+    </button>
+    <button id="patternBtn" class="btn" title="Pattern">
+      <span class="material-icons">texture</span>
+    </button>
+  </div>
+
+  <script>
+  (function() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const imgs = { front: new Image(), back: new Image() };
+    const defaults = {
+      side: 'front',
+      ribbonColor: 'Crimson',
+      textColor: 'White',
+      font: 'Arial',
+      symbol: '',
+      textSize: 30,
+      pattern: 'none',
+      texts: { front: 'Congratulations!', back: '' }
+    };
+    let cfg = JSON.parse(localStorage.getItem('ribbonCfg') || null) || defaults;
+    const namedColors = ['Crimson','DarkBlue','ForestGreen','Gold','Purple'];
+    const namedFonts  = ['Arial','Courier New','Georgia','Impact','Times New Roman'];
+    const patterns = ['none','stripes','waves','dots'];
+
+    // Load model images (replace with real sources)
+    imgs.front.src = 'model_front.png';
+    imgs.back.src  = 'model_back.png';
+    let changes = false;
+
+    // Draw loop
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const img = imgs[cfg.side];
+      if (img.complete) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      else img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      // Draw ribbon path
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(500,100);
+      ctx.lineTo(520,120);
+      ctx.lineTo(150,650);
+      ctx.lineTo(130,630);
+      ctx.closePath();
+      ctx.fillStyle = cfg.ribbonColor;
+      ctx.fill();
+
+      // Pattern overlay
+      if (cfg.pattern !== 'none') {
+        const patCanvas = document.createElement('canvas');
+        patCanvas.width = patCanvas.height = 20;
+        const pctx = patCanvas.getContext('2d');
+        pctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        pctx.lineWidth = 2;
+        if (cfg.pattern==='stripes') {
+          pctx.moveTo(0,0); pctx.lineTo(20,20);
+        } else if (cfg.pattern==='waves') {
+          pctx.moveTo(0,10);
+          pctx.quadraticCurveTo(5,0,10,10);
+          pctx.quadraticCurveTo(15,20,20,10);
+        } else if (cfg.pattern==='dots') {
+          pctx.arc(10,10,3,0,2*Math.PI);
+        }
+        pctx.stroke();
+        const pat = ctx.createPattern(patCanvas,'repeat');
+        ctx.fillStyle = pat;
+        ctx.fill();
+      }
+
+      // Text on ribbon
+      ctx.fillStyle = cfg.textColor;
+      ctx.font = `${cfg.textSize}px "${cfg.font}"`;
+      ctx.textAlign = 'center';
+      const txt = cfg.texts[cfg.side];
+      const x = 320, y = 300;
+      ctx.fillText(txt, x, y);
+      if (cfg.symbol) {
+        ctx.fillText(cfg.symbol, x, y + cfg.textSize + 10);
+      }
+      ctx.restore();
+    }
+
+    // Save to localStorage
+    function saveCfg() {
+      localStorage.setItem('ribbonCfg', JSON.stringify(cfg));
+      changes = true;
+      publishBtn.disabled = false;
+      draw();
+    }
+
+    // Clear all
+    const clearBtn = document.getElementById('clearBtn');
+    clearBtn.onclick = () => {
+      localStorage.removeItem('ribbonCfg');
+      cfg = JSON.parse(JSON.stringify(defaults));
+      changes = false;
+      publishBtn.disabled = true;
+      draw();
+    };
+
+    // Rotate front/back
+    const rotateBtn = document.getElementById('rotateBtn');
+    rotateBtn.onclick = () => {
+      cfg.side = cfg.side === 'front' ? 'back' : 'front';
+      saveCfg();
+    };
+
+    // Publish via Share API
+    const publishBtn = document.getElementById('publishBtn');
+    publishBtn.onclick = async () => {
+      canvas.toBlob(async (blob) => {
+        const fileImg = new File([blob], 'ribbon.png', { type:'image/png' });
+        const dataTxt = new Blob([JSON.stringify(cfg)], { type:'text/plain' });
+        const fileTxt = new File([dataTxt], 'data.txt', { type:'text/plain' });
+        if (navigator.canShare && navigator.canShare({ files:[fileImg,fileTxt] })) {
+          await navigator.share({
+            files: [fileImg, fileTxt],
+            title: 'My Graduation Ribbon',
+            text: 'Check out my custom ribbon!'
+          });
+        } else {
+          // fallback: download
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'ribbon.png';
+          a.click();
+          const b = document.createElement('a');
+          b.href = URL.createObjectURL(dataTxt);
+          b.download = 'data.txt';
+          b.click();
+        }
+      });
+    };
+
+    // General picker helper
+    function pick(title, options, prop, isColor=false) {
+      const choice = prompt(
+        `${title}\n${options.map((o,i)=>i+1+'. '+o).join('\n')}`,
+        options.indexOf(cfg[prop]) +1
+      );
+      const idx = parseInt(choice) -1;
+      if (idx>=0 && idx<options.length) {
+        cfg[prop] = options[idx];
+        saveCfg();
+      }
+    }
+
+    document.getElementById('bgColorBtn').onclick = () => pick('Select Ribbon Color', namedColors, 'ribbonColor',true);
+    document.getElementById('textColorBtn').onclick = () => pick('Select Text Color', namedColors, 'textColor',true);
+    document.getElementById('fontBtn').onclick = () => pick('Select Font', namedFonts, 'font');
+    document.getElementById('symbolBtn').onclick = () => {
+      const syms = ['⭐','🏆','🎓','🌟','🌸','🦉'];
+      pick('Select Symbol', syms, 'symbol');
+    };
+    document.getElementById('sizeBtn').onclick = () => {
+      const sizes = ['20','24','30','36','48'];
+      const s = prompt('Text Size\n'+sizes.join(', '), cfg.textSize);
+      const val = parseInt(s);
+      if (sizes.includes(String(val))) { cfg.textSize = val; saveCfg(); }
+    };
+    document.getElementById('patternBtn').onclick = () => pick('Select Pattern', patterns, 'pattern');
+
+    // Text editing on ribbon
+    canvas.onclick = (e) => {
+      const txt = prompt(`Enter text for ${cfg.side} (max 50 chars):`, cfg.texts[cfg.side]);
+      if (txt!==null && txt.length<=50) {
+        cfg.texts[cfg.side] = txt;
+        saveCfg();
+      } else if (txt && txt.length>50) {
+        alert('Limit 50 characters.');
+      }
+    };
+
+    // Initialize
+    draw();
+  })();
+  </script>
+</body>
+</html>
