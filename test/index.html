@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Graduation Ribbon Designer</title>
+ <link rel="stylesheet" href="style.css">
+ <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+ <script src="java.js"></script>
+</head>
+<body>
+ <div class="container">
+  <header>
+   <button id="clear-button" class="header-button"><i class="material-icons">delete</i> Clear</button>
+   <button id="publish-button" class="header-button" disabled><i class="material-icons">share</i> Publish</button>
+   <button id="rotate-button" class="model-button"><i class="material-icons">360</i></button>
+  </header>
+  <div class="main-area">
+   <div class="left-panel">
+    <button id="bg-color-button" class="panel-button"><i class="material-icons">format_paint</i> Background</button>
+    <button id="text-color-button" class="panel-button"><i class="material-icons">format_color_text</i> Text Color</button>
+    <button id="font-button" class="panel-button"><i class="material-icons">font_download</i> Font</button>
+   </div>
+   <div class="model-container">
+    <div id="model">
+     <div id="model-front">
+      <div id="ribbon-front" contenteditable="true" maxlength="50"></div>
+     </div>
+     <div id="model-back" style="display: none;">
+      <div id="ribbon-back" contenteditable="true" maxlength="50"></div>
+     </div>
+    </div>
+   </div>
+   <div class="right-panel">
+    <button id="symbol-button" class="panel-button"><i class="material-icons">star</i> Symbol</button>
+    <button id="size-button" class="panel-button"><i class="material-icons">format_size</i> Size</button>
+    <button id="pattern-button" class="panel-button"><i class="material-icons">texture</i> Pattern</button>
+   </div>
+  </div>
+  <div class="options-panel" id="options-panel">
+   </div>
+ </div>
+ <script src="script.js"></script>
+</body>
+</html>
